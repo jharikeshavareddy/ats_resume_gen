@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Resume - {{ resume.full_name }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{% url 'dashboard' %}">ATS Resume Builder</a>
+            <a href="{% url 'logout' %}" class="btn btn-outline-light btn-sm">Logout</a>
+        </div>
+    </nav>
+
+    <div class="container my-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Edit Resume: {{ resume.full_name }}</h2>
+            <div>
+                <a href="{% url 'resume_preview' resume.id %}" class="btn btn-primary">
+                    <i class="fas fa-eye"></i> Preview
+                </a>
+                <a href="{% url 'dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
+            </div>
+        </div>
+
+        <!-- Basic Information Form -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-user"></i> Basic Information</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Full Name *</label>
+                            <input type="text" name="full_name" class="form-control" value="{{ resume.full_name }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Job Title</label>
+                            <input type="text" name="job_title" class="form-control" value="{{ resume.job_title|default:'' }}" placeholder="e.g., Software Engineer">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Email *</label>
+                            <input type="email" name="email" class="form-control" value="{{ resume.email }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Mobile</label>
+                            <input type="text" name="mobile" class="form-control" value="{{ resume.mobile|default:'' }}">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Location</label>
+                            <input type="text" name="location" class="form-control" value="{{ resume.location|default:'' }}" placeholder="e.g., Hyderabad, Telangana">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">LinkedIn URL</label>
+                            <input type="url" name="linkedin_url" class="form-control" value="{{ resume.linkedin_url|default:'' }}">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">GitHub URL</label>
+                            <input type="url" name="github_url" class="form-control" value="{{ resume.github_url|default:'' }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Portfolio URL</label>
+                            <input type="url" name="portfolio_url" class="form-control" value="{{ resume.portfolio_url|default:'' }}">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Objective</label>
+                        <textarea name="objective" class="form-control" rows="3" placeholder="Your career objective">{{ resume.objective|default:'' }}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Professional Summary</label>
+                        <textarea name="professional_summary" class="form-control" rows="3">{{ resume.professional_summary|default:'' }}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Skills (comma-separated)</label>
+                        <textarea name="skills" class="form-control" rows="2" placeholder="Python, Django, JavaScript, React">{{ resume.skills|default:'' }}</textarea>
+                    </div>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Education Section -->
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-graduation-cap"></i> Education</h5>
+                <a href="{% url 'add_education' resume.id %}" class="btn btn-sm btn-light">
+                    <i class="fas fa-plus"></i> Add Education
+                </a>
+            </div>
+            <div class="card-body">
+                {% if educations %}
+                    <div class="list-group">
+                        {% for edu in educations %}
+                            <div class="list-group-item d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1">{{ edu.degree }}{% if edu.branch %} in {{ edu.branch }}{% endif %}</h6>
+                                    <p class="mb-1">{{ edu.institution }}</p>
+                                    <small class="text-muted">{{ edu.year }}</small>
+                                </div>
+                                <a href="{% url 'delete_education' edu.id %}" class="btn btn-sm btn-danger" onclick="return confirm('Delete this education entry?')">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted">No education entries yet.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Work Experience Section -->
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-briefcase"></i> Work Experience</h5>
+                <a href="{% url 'add_work_experience' resume.id %}" class="btn btn-sm btn-light">
+                    <i class="fas fa-plus"></i> Add Experience
+                </a>
+            </div>
+            <div class="card-body">
+                {% if work_experiences %}
+                    <div class="list-group">
+                        {% for exp in work_experiences %}
+                            <div class="list-group-item d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1">{{ exp.position }} at {{ exp.company_name }}</h6>
+                                    <p class="mb-1"><small>{{ exp.start_date }}{% if exp.end_date %} - {{ exp.end_date }}{% endif %}</small></p>
+                                    <p class="mb-1">{{ exp.location }}</p>
+                                    <small class="text-muted">{{ exp.description|truncatewords:20 }}</small>
+                                </div>
+                                <a href="{% url 'delete_work_experience' exp.id %}" class="btn btn-sm btn-danger" onclick="return confirm('Delete this experience?')">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted">No work experience entries yet.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Projects Section -->
+        <div class="card mb-4">
+            <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-project-diagram"></i> Projects</h5>
+                <a href="{% url 'add_project' resume.id %}" class="btn btn-sm btn-dark">
+                    <i class="fas fa-plus"></i> Add Project
+                </a>
+            </div>
+            <div class="card-body">
+                {% if projects %}
+                    <div class="list-group">
+                        {% for project in projects %}
+                            <div class="list-group-item d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1">{{ project.title }}</h6>
+                                    <small class="text-muted">{{ project.description|truncatewords:20 }}</small>
+                                </div>
+                                <a href="{% url 'delete_project' project.id %}" class="btn btn-sm btn-danger" onclick="return confirm('Delete this project?')">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted">No projects yet.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Certifications Section -->
+        <div class="card mb-4">
+            <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-certificate"></i> Certifications</h5>
+                <a href="{% url 'add_certification' resume.id %}" class="btn btn-sm btn-light">
+                    <i class="fas fa-plus"></i> Add Certification
+                </a>
+            </div>
+            <div class="card-body">
+                {% if certifications %}
+                    <div class="list-group">
+                        {% for cert in certifications %}
+                            <div class="list-group-item d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1">{{ cert.name }}</h6>
+                                    <small class="text-muted">{{ cert.issuing_organization }}{% if cert.issue_date %} - {{ cert.issue_date }}{% endif %}</small>
+                                </div>
+                                <a href="{% url 'delete_certification' cert.id %}" class="btn btn-sm btn-danger" onclick="return confirm('Delete this certification?')">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted">No certifications yet.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Extra-Curricular Activities Section -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-users"></i> Extra-Curricular Activities</h5>
+                <a href="{% url 'add_extra_curricular' resume.id %}" class="btn btn-sm btn-light">
+                    <i class="fas fa-plus"></i> Add Activity
+                </a>
+            </div>
+            <div class="card-body">
+                {% if extra_curriculars %}
+                    <div class="list-group">
+                        {% for activity in extra_curriculars %}
+                            <div class="list-group-item d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1">{{ activity.role }} at {{ activity.organization }}</h6>
+                                    <p class="mb-1"><small>{% if activity.start_date %}{{ activity.start_date }}{% if activity.end_date %} - {{ activity.end_date }}{% endif %}{% endif %}</small></p>
+                                    <small class="text-muted">{{ activity.description|truncatewords:15 }}</small>
+                                </div>
+                                <a href="{% url 'delete_extra_curricular' activity.id %}" class="btn btn-sm btn-danger" onclick="return confirm('Delete this activity?')">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted">No extra-curricular activities yet.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Achievements Section -->
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-trophy"></i> Honours and Achievements</h5>
+                <a href="{% url 'add_achievement' resume.id %}" class="btn btn-sm btn-light">
+                    <i class="fas fa-plus"></i> Add Achievement
+                </a>
+            </div>
+            <div class="card-body">
+                {% if achievements %}
+                    <div class="list-group">
+                        {% for achievement in achievements %}
+                            <div class="list-group-item d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1">{{ achievement.title }}</h6>
+                                    {% if achievement.description %}<small class="text-muted">{{ achievement.description|truncatewords:15 }}</small>{% endif %}
+                                </div>
+                                <a href="{% url 'delete_achievement' achievement.id %}" class="btn btn-sm btn-danger" onclick="return confirm('Delete this achievement?')">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted">No achievements yet.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Export Options -->
+        <div class="card mb-4">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0"><i class="fas fa-download"></i> Export Resume</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2 d-md-flex">
+                    <a href="{% url 'export_docx' resume.id %}" class="btn btn-primary">
+                        <i class="fas fa-file-word"></i> Download as DOCX
+                    </a>
+                    <a href="{% url 'export_latex' resume.id %}" class="btn btn-info">
+                        <i class="fas fa-file-code"></i> Download LaTeX Source
+                    </a>
+                    <a href="{% url 'export_pdf' resume.id %}" class="btn btn-danger">
+                        <i class="fas fa-file-pdf"></i> Download as PDF
+                    </a>
+                </div>
+                <small class="text-muted d-block mt-2">
+                    <i class="fas fa-info-circle"></i> PDF export requires pdflatex to be installed on the server. If it fails, download the LaTeX source and compile it locally.
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

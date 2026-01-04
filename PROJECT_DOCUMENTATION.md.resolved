@@ -1,0 +1,355 @@
+# ATS Resume Builder Project Documentation
+
+**Date:** December 21, 2025  
+**Project:** ATS Resume Builder with Django & NLP  
+**Version:** 1.0  
+
+---
+
+# Table of Contents
+
+1. [Introduction](#1-introduction)
+   - 1.1 Project Overview
+   - 1.2 Purpose & Scope
+   - 1.3 Problem Statement
+   - 1.4 Solution Proposed
+2. [System Requirements](#2-system-requirements)
+   - 2.1 Hardware Requirements
+   - 2.2 Software Requirements
+   - 2.3 Functional Requirements
+   - 2.4 Non-Functional Requirements
+3. [System Analysis & Design](#3-system-analysis--design)
+   - 3.1 System Architecture
+   - 3.2 Data Flow Diagram (DFD) Description
+   - 3.3 Database Design (ER Diagram Description)
+   - 3.4 Technology Stack
+4. [Implementation Details](#4-implementation-details)
+   - 4.1 Project Structure
+   - 4.2 Core Modules
+   - 4.3 Database Models
+   - 4.4 User Interface Design
+5. [Key Algorithms & Logic](#5-key-algorithms--logic)
+   - 5.1 ATS Scoring Engine
+   - 5.2 Role Detection Algorithm
+   - 5.3 Keyword Extraction (NLP)
+6. [Feature Showcase](#6-feature-showcase)
+   - 6.1 User Authentication
+   - 6.2 Resume Management
+   - 6.3 PDF & LaTeX Generation
+7. [Testing & Validation](#7-testing--validation)
+   - 7.1 Unit Testing
+   - 7.2 Manual Testing Framework
+8. [Conclusion & Future Scope](#8-conclusion--future-scope)
+9. [Appendix](#9-appendix)
+
+---
+
+<div style="page-break-after: always;"></div>
+
+# 1. Introduction
+
+## 1.1 Project Overview
+The **ATS Resume Builder** is a sophisticated web application developed using the **Django** framework. It is designed to help job seekers create professional, ATS-friendly resumes that significantly increase their chances of passing through Applicant Tracking Systems (ATS). The system allows users to create, manage, and export their resumes in multiple formats (PDF, DOCX, LaTeX) while providing real-time feedback on how well their resume matches a specific job description.
+
+## 1.2 Purpose & Scope
+The primary purpose of this project is to bridge the gap between job seekers and automated hiring systems. Many qualified candidates are rejected simply because their resumes are not formatted correctly or lack specific keywords that ATS algorithms look for.
+
+**Scope:**
+- **Resume Creation:** A structured form wizard to enter personal details, education, experience, projects, skills, etc.
+- **ATS Analysis:** An intelligent engine that compares the resume against a job description (JD) using Natural Language Processing (NLP).
+- **Multi-Format Export:** Ability to download resumes in industry-standard formats.
+- **User Management:** Secure accounts for users to save and manage multiple versions of their resumes.
+
+## 1.3 Problem Statement
+In the modern recruitment landscape, 99% of Fortune 500 companies use ATS to filter resumes before a human ever sees them. A common problem for applicants is:
+1.  **Unknown Criteria:** Candidates don't know what keywords the ATS is looking for.
+2.  **Formatting Issues:** Fancy templates often confuse ATS parsers, leading to rejection.
+3.  **Lack of Feedback:** Candidates apply endlessly without knowing why they are being rejected.
+
+## 1.4 Solution Proposed
+This project provides a comprehensive solution by:
+1.  **Standardizing Input:** Forcing structured data entry ensures all critical fields are present.
+2.  **Intelligent Feedback:** Providing a percentage match score and a list of specific missing keywords.
+3.  **Clean Export:** Generating clean, machine-readable PDFs and LaTeX documents that are guaranteed to be ATS-compliant.
+
+<div style="page-break-after: always;"></div>
+
+# 2. System Requirements
+
+## 2.1 Hardware Requirements
+To run the server development environment:
+- **Processor:** Intel Core i5 or higher (or M1/M2 Silicon)
+- **RAM:** Minimum 8GB (recommended 16GB for smooth NLP processing)
+- **Storage:** 500MB free space
+- **Internet:** Required for installing Python packages and downloading Spacy models.
+
+## 2.2 Software Requirements
+- **Operating System:** macOS, Linux (Ubuntu/Debian), or Windows 10/11
+- **Programming Language:** Python 3.10+
+- **Framework:** Django 5.2.7+
+- **Database:** SQLite (Development), PostgreSQL (Production recommended)
+- **Libraries:** 
+    - `spacy` (NLP)
+    - `reportlab` (PDF Generation)
+    - `python-docx` (Word Generation)
+    - `nltk` (Text Processing)
+
+## 2.3 Functional Requirements
+1.  **User System:**
+    - Users must be able to register and login securely.
+    - Each user data must be isolated.
+2.  **Resume Operations (CRUD):**
+    - Create a new resume profile.
+    - Read/Preview the resume layout.
+    - Update fields (Education, Work Experience, Skills, etc.).
+    - Delete unwanted resume entries.
+3.  **ATS Scoring:**
+    - System must look for a Job Description (JD).
+    - System must calculate a score (0-100%) based on keyword overlap.
+    - System must identify the "Role" (e.g., Python Developer) and adjust scoring criteria.
+4.  **Export:**
+    - Download as PDF.
+    - Download as DOCX.
+    - Download as LaTeX source.
+
+## 2.4 Non-Functional Requirements
+- **Performance:** Resume generation should take less than 2 seconds.
+- **Reliability:** The system should handle malformed text inputs gracefully without crashing.
+- **Scalability:** The database schema should support multiple resumes per user (One-to-Many).
+- **Security:** CSRF protection on all forms; SQL injection prevention via Django ORM.
+
+<div style="page-break-after: always;"></div>
+
+# 3. System Analysis & Design
+
+## 3.1 System Architecture
+The project follows the standard **Django MVT (Model-View-Template)** architecture, which is a variation of MVC.
+
+- **Model (M):** Defines the data structure (SQLite tables) in [models.py](file:///Users/jakkaharikeshavareddy/Desktop/Q-spy/django/ats_resume/resume/models.py).
+- **View (V):** Handles the business logic and connects models to templates in [views.py](file:///Users/jakkaharikeshavareddy/Desktop/Q-spy/django/ats_resume/resume/views.py).
+- **Template (T):** The presentation layer (HTML/CSS) stored in the `templates/` directory.
+
+Additionally, a Service Layer ([ats_engine.py](file:///Users/jakkaharikeshavareddy/Desktop/Q-spy/django/ats_resume/resume/ats_engine.py)) is introduced to decouple the heavy NLP logic from the views.
+
+## 3.2 Data Flow
+1.  **User Input:** User submits resume data via HTML Forms.
+2.  **Processing:** Django View receives the `POST` request, validates data using [forms.py](file:///Users/jakkaharikeshavareddy/Desktop/Q-spy/django/ats_resume/resume/forms.py).
+3.  **Storage:** Validated data is saved to SQLite Database via ORM.
+4.  **Analysis:** When requested, data is fetched and passed to [ats_score()](file:///Users/jakkaharikeshavareddy/Desktop/Q-spy/django/ats_resume/resume/ats_engine.py#133-179) function.
+    - `spacy` processes text -> extracts entities -> matches with JD.
+5.  **Output:** Score + Resume Data is rendered to a Template or generated as a File Stream (PDF/DOCX).
+
+## 3.3 Database Design (ER Diagram Description)
+The database is normalized to avoid redundancy. The core entity is [Resume](file:///Users/jakkaharikeshavareddy/Desktop/Q-spy/django/ats_resume/resume/models.py#7-25).
+
+- **User (Django Built-in):** Stores username, password, email.
+- **Resume:**
+    - `Foreign Key` to User.
+    - Fields: full_name, email, mobile, links, summary.
+- **Education:**
+    - `Foreign Key` to Resume (One-to-Many).
+    - Fields: degree, institution, year.
+- **WorkExperience:**
+    - `Foreign Key` to Resume.
+    - Fields: company, position, start_date, end_date, description.
+- **Project:**
+    - `Foreign Key` to Resume.
+    - Fields: title, description.
+- **Skill:**
+    - `Foreign Key` to Resume.
+    - Fields: name.
+- **JobDescription:**
+    - `Foreign Key` to Resume (One-to-One mostly for this flow).
+    - Stores the target JD for scoring.
+
+## 3.4 Technology Stack
+| Component | Technology | Description |
+|-----------|------------|-------------|
+| **Backend** | Django 5.2 | High-level Python web framework |
+| **Language** | Python 3.x | Core logic and scripting |
+| **NLP Engine** | Spacy `en_core_web_sm` | Industrial-strength NLP library |
+| **Database** | SQLite3 | File-based relational database |
+| **PDF Engine** | ReportLab | Programmatic PDF creation |
+| **Frontend** | HTML5, CSS3, Bootstrap | Responsive user interface |
+
+<div style="page-break-after: always;"></div>
+
+# 4. Implementation Details
+
+## 4.1 Project Structure
+The project is organized as a Django project (`ats_resume`) containing a main app ([resume](file:///Users/jakkaharikeshavareddy/Desktop/Q-spy/django/ats_resume/resume/ats_engine.py#103-128)).
+
+```
+ats_resume/
+├── manage.py              # CLI entry point
+├── db.sqlite3             # Database file
+├── ats_resume/            # Project settings
+│   ├── settings.py
+│   ├── urls.py
+│   └── wsgi.py
+├── resume/                # Main Application
+│   ├── migrations/        # DB schema history
+│   ├── templates/         # HTML files
+│   ├── admin.py
+│   ├── ats_engine.py      # Core NLP Logic
+│   ├── forms.py           # Data validation forms
+│   ├── latex_generator.py # LaTeX export logic
+│   ├── models.py          # Database definitions
+│   ├── pdf_generator.py   # PDF export logic
+│   ├── urls.py            # App-specific routing
+│   └── views.py           # Request handlers
+└── requirements.txt       # Dependencies
+```
+
+## 4.2 Core Modules
+
+### 4.2.1 [resume/models.py](file:///Users/jakkaharikeshavareddy/Desktop/Q-spy/django/ats_resume/resume/models.py)
+This file defines the schema. It uses Django's ORM features like `related_name` to allow easy reverse-lookups (e.g., `resume.work_experiences.all()`).
+*Key Insight:* The relationship between `User` and [Resume](file:///Users/jakkaharikeshavareddy/Desktop/Q-spy/django/ats_resume/resume/models.py#7-25) is 1:N, allowing a user to tailor different resumes for different job applications.
+
+### 4.2.2 [resume/views.py](file:///Users/jakkaharikeshavareddy/Desktop/Q-spy/django/ats_resume/resume/views.py)
+Contains 20+ view functions handling the application flow.
+- [dashboard()](file:///Users/jakkaharikeshavareddy/Desktop/Q-spy/django/ats_resume/resume/views.py#46-67): Aggregates all user resumes and calculates their scores.
+- [edit_resume()](file:///Users/jakkaharikeshavareddy/Desktop/Q-spy/django/ats_resume/resume/views.py#206-239): A central hub view that loads all child objects (Education, Projects) for a resume.
+- [export_resume_pdf()](file:///Users/jakkaharikeshavareddy/Desktop/Q-spy/django/ats_resume/resume/views.py#415-434): Streams a generated PDF file as an HTTP attachment.
+
+### 4.2.3 [resume/forms.py](file:///Users/jakkaharikeshavareddy/Desktop/Q-spy/django/ats_resume/resume/forms.py)
+Utilizes `ModelForm` to generate HTML forms automatically from Models.
+*Validation:* Custom validation logic (e.g., limiting Projects to 2 max per resume) ensures data integrity before it reaches the database.
+
+## 4.3 Database Models Highlight
+```python
+class Resume(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    full_name = models.CharField(max_length=150)
+    skills = models.TextField(null=True, blank=True)
+    # ... other fields
+```
+
+<div style="page-break-after: always;"></div>
+
+# 5. Key Algorithms & Logic
+
+## 5.1 ATS Scoring Engine ([ats_engine.py](file:///Users/jakkaharikeshavareddy/Desktop/Q-spy/django/ats_resume/resume/ats_engine.py))
+This is the "brain" of the application. It performs the following steps:
+
+1.  **Normalization:** Converts both Resume text and Job Description to lowercase.
+2.  **Lemmatization:** Uses Spacy to reduce words to their base form (e.g., "Developing" -> "Develop").
+3.  **Keyword Extraction:**
+    ```python
+    def extract_keywords(text):
+        doc = nlp(text.lower())
+        return {token.lemma_ for token in doc if token.is_alpha and not token.is_stop}
+    ```
+4.  **Matching:** Calculates the intersection of Resume Keywords and JD Keywords.
+5.  **Scoring Formula:**
+    \[ \text{Score} = ( \text{KeywordMatch} \times 0.6 ) + ( \text{RoleBonus} \times 0.4 ) \]
+
+## 5.2 Role Detection Algorithm
+The system doesn't just count words; it understands context. It detects the "Role" of the JD (e.g., "Full Stack", "Data Science", "DevOps") by scanning for role-specific keyword clusters.
+
+**Supported Roles:**
+- Full Stack Developer
+- Backend (Java, Python, Node)
+- Frontend (React, Angular)
+- DevOps
+
+If a role is detected, the system gives bonus points if the resume contains "Core" keywords for that role. For example, if the role is "React Developer", having "Redux" or "Hooks" in the resume boosts the score significantly.
+
+<div style="page-break-after: always;"></div>
+
+# 6. Feature Showcase
+
+## 6.1 User Authentication
+Secure login and registration pages built with Django's AuthenticationForm. It handles session management (cookies) automatically, ensuring that users can only access their own data (`@login_required` decorator).
+
+## 6.2 Resume Management
+The Dashboard serves as the command center.
+- **Visual Status:** Users see a list of their resumes with "Last Updated" timestamps.
+- **Quick Actions:** Icons for Edit, Preview, and Delete.
+- **Real-time Score:** If a JD is attached, the ATS score is displayed on the dashboard card.
+
+## 6.3 PDF & LaTeX Generation
+
+### PDF Generation ([pdf_generator.py](file:///Users/jakkaharikeshavareddy/Desktop/Q-spy/django/ats_resume/resume/pdf_generator.py))
+Uses `ReportLab` to draw the PDF canvas.
+- **Custom Styling:** Defines styles for Headers, Subheaders, and Bullet points to mimic a professional LaTeX format.
+- **Unicode Support:** Handles special characters for email/phone icons.
+- **Dynamic Layout:** Iterates through dynamic lists (e.g., infinite work experiences) and adds page breaks automatically.
+
+### LaTeX Generation ([latex_generator.py](file:///Users/jakkaharikeshavareddy/Desktop/Q-spy/django/ats_resume/resume/latex_generator.py))
+Generates a raw string containing LaTeX code.
+- **Template:** Uses a variant of the popular "Jake's Resume" LaTeX template.
+- **Escaping:** A critical helper function [escape_latex()](file:///Users/jakkaharikeshavareddy/Desktop/Q-spy/django/ats_resume/resume/latex_generator.py#6-27) ensures that user input containing characters like `%`, `$`, or `&` doesn't break the LaTeX compilation.
+
+<div style="page-break-after: always;"></div>
+
+# 7. Testing & Validation
+
+To ensure the reliability of the system, the following testing strategies were employed.
+
+## 7.1 Unit Testing
+- **Model Tests:** Verified that creating a Resume with missing required fields raises integrity errors.
+- **View Tests:** Checked that unauthorized users are redirected to the login page when trying to access `/dashboard`.
+- **ATS Logic Tests:** Passed a mock JD and Resume with known keywords to verify that the scoring function returns the expected mathematically calculated percentage.
+
+## 7.2 Manual Testing Framework
+| Feature | Test Case | Expected Result | Status |
+|---------|-----------|-----------------|--------|
+| **Registration** | Submit valid form | Account created, redirected to Dashboard | Pass |
+| **ATS Score** | Empty Resume vs JD | Score should be 0% | Pass |
+| **Constraint** | Add 3 Projects | Error: "Max 2 projects allowed" | Pass |
+| **Export** | Click "Export PDF" | Browser initiates download of `.pdf` file | Pass |
+| **Security** | Access `/edit/1` as User 2 | 404 Not Found (Object Permissions) | Pass |
+
+<div style="page-break-after: always;"></div>
+
+# 8. Conclusion & Future Scope
+
+## 8.1 Conclusion
+The ATS Resume Builder successfully addresses the core problem of formatting and keyword optimization for job seekers. By leveraging Python's powerful NLP capabilities and Django's robust web framework, we have created a tool that is both functional and educational. It doesn't just build a resume; it teaches the user *how* to build a better resume for the machine that will read it.
+
+The inclusion of role-specific analysis differentiates this tool from basic keyword counters, providing higher-value feedback to software engineering candidates.
+
+## 8.2 Future Scope
+While the current version is robust, future enhancements could include:
+1.  **AI Text Generation:** Integration with OpenAI API to auto-generate bullet points for job descriptions.
+2.  **Cloud Deployment:** Dockerizing the application for deployment on AWS/Heroku.
+3.  **Multiple Templates:** Adding more PDF designs beyond the single professional standard.
+4.  **LinkedIn Import:** Scraping LinkedIn profiles to auto-fill the resume form.
+
+<div style="page-break-after: always;"></div>
+
+# 9. Appendix
+
+## A. Directory Tree (Detailed)
+```
+ats_resume/
+    manage.py
+    ats_resume/
+        settings.py
+        urls.py
+        wsgi.py
+    resume/
+        ats_engine.py
+        pdf_generator.py
+        latex_generator.py
+        views.py
+        models.py
+        templates/resume/
+            dashboard.html
+            resume_preview.html
+            edit_resume.html
+```
+
+## B. Sample Role Configuration (JSON)
+```json
+"react": {
+    "core": ["react", "jsx", "hooks", "components"],
+    "ecosystem": ["redux", "next.js", "gatsby"],
+    "concepts": ["virtual dom", "state management"]
+}
+```
+
+---
+*End of Document*

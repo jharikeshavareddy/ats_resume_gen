@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Resume</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #000;
+        }
+
+        h1 {
+            font-size: 22px;
+            margin-bottom: 5px;
+        }
+
+        h2 {
+            font-size: 16px;
+            margin-top: 20px;
+            border-bottom: 1px solid #000;
+            padding-bottom: 3px;
+        }
+
+        p {
+            margin: 6px 0;
+        }
+
+        ul {
+            margin-left: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- NAME -->
+    <h1>{{ resume.name }}</h1>
+
+    <!-- SUMMARY -->
+    <h2>Professional Summary</h2>
+    <p>{{ resume.summary }}</p>
+
+    <!-- EXPERIENCE -->
+    <h2>Experience</h2>
+    {% for exp in resume.experience_set.all %}
+        <p>{{ exp.description }}</p>
+    {% empty %}
+        <p>No experience added.</p>
+    {% endfor %}
+
+    <!-- SKILLS -->
+    <h2>Skills</h2>
+    <ul>
+        {% for skill in resume.skill_set.all %}
+            <li>{{ skill.name }}</li>
+        {% empty %}
+            <li>No skills listed.</li>
+        {% endfor %}
+    </ul>
+
+</body>
+</html>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ATS Score</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f8;
+        }
+
+        .container {
+            width: 600px;
+            margin: 60px auto;
+            background: #fff;
+            padding: 25px;
+            border-radius: 6px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 50px;
+            margin: 10px 0;
+        }
+
+        .good { color: green; }
+        .medium { color: orange; }
+        .bad { color: red; }
+
+        ul {
+            text-align: left;
+        }
+
+        a.button {
+            display: inline-block;
+            padding: 10px 18px;
+            background-color: #2f80ed;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h2>ATS Compatibility Score</h2>
+
+    <h1 class="
+        {% if score >= 80 %}good
+        {% elif score >= 60 %}medium
+        {% else %}bad
+        {% endif %}
+    ">
+        {{ score }}%
+    </h1>
+
+    <h3>Missing / Suggested Keywords</h3>
+    <ul>
+        {% for word in missing %}
+            <li>{{ word }}</li>
+        {% empty %}
+            <li>No major keywords missing</li>
+        {% endfor %}
+    </ul>
+
+    <a class="button" href="{% url 'dashboard' %}">Go to Dashboard</a>
+    <a href="{% url 'resume_preview' resume.id %}">Preview Resume</a>
+
+
+</div>
+
+</body>
+</html>
