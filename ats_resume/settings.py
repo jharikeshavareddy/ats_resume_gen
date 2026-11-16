@@ -25,8 +25,13 @@ SECRET_KEY = 'django-insecure-nk-41gy9h*0%wfv1u5w%+4*k#naxbc*&+e((gg(^!0306q=@*e
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = [
+    "ats-resume-gen.vercel.app",
+    ".vercel.app",
+    "localhost",
+    "127.0.0.1",
+]
+CSRF_TRUSTED_ORIGINS = ["https://ats-resume-gen.vercel.app", "https://*.vercel.app"]
 
 # Application definition
 
